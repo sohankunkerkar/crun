@@ -1316,15 +1316,6 @@ container_init_setup (void *args, pid_t own_pid, char *notify_socket,
   if (UNLIKELY (ret < 0))
     return ret;
 
-  if (def->hooks && def->hooks->create_container_len)
-    {
-      ret = do_hooks (def, 0, container->context->id, false, NULL, "created", (hook **) def->hooks->create_container,
-                      def->hooks->create_container_len, entrypoint_args->hooks_out_fd, entrypoint_args->hooks_err_fd,
-                      err);
-      if (UNLIKELY (ret != 0))
-        return ret;
-    }
-
   if (def->process)
     {
       ret = libcrun_set_selinux_label (def->process, false, err);
@@ -1354,6 +1345,15 @@ container_init_setup (void *args, pid_t own_pid, char *notify_socket,
   ret = maybe_chown_std_streams (container->container_uid, container->container_gid, err);
   if (UNLIKELY (ret < 0))
     return ret;
+
+  if (def->hooks && def->hooks->create_container_len)
+    {
+      ret = do_hooks (def, 0, container->context->id, false, NULL, "created", (hook **) def->hooks->create_container,
+                      def->hooks->create_container_len, entrypoint_args->hooks_out_fd, entrypoint_args->hooks_err_fd,
+                      err);
+      if (UNLIKELY (ret != 0))
+        return ret;
+    }
 
   ret = setup_environment (def, container->container_uid, err);
   if (UNLIKELY (ret < 0))
